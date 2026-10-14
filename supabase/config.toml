@@ -1,0 +1,5 @@
+project_id = "shiwa-creator-hub"
+
+[functions.instagram-oauth]
+verify_jwt = false
+
