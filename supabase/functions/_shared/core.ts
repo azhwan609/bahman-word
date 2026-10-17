@@ -116,12 +116,39 @@ async function openAICompat(system: string, user: string): Promise<string> {
   return (await r.json()).choices[0].message.content;
 }
 
-// ---------- Image provider: free, keyless default (Pollinations); swap per provider here
+// ---------- Image provider: try Gemini image generation first; use free fallback if unavailable
 export async function generateImage(prompt: string, style: string) {
-  const full = `${prompt}, ${style} style, high quality`;
+  const full = `${prompt}, ${style} style, professional composition, high detail`;
+  if (env("GEMINI_API_KEY")) {
+    try {
+      const model = env("GEMINI_IMAGE_MODEL") || "gemini-2.5-flash-image";
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": env("GEMINI_API_KEY") },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: `Generate one polished, photorealistic image based on this prompt: ${full}. Return an image, not just a description.` }] }],
+          generationConfig: { responseModalities: ["IMAGE", "TEXT"] }
+        })
+      });
+      if (r.ok) {
+        const j = await r.json();
+        const part = (j.candidates?.[0]?.content?.parts ?? []).find((p: any) => p.inlineData?.data);
+        if (part?.inlineData?.data) {
+          const binary = atob(part.inlineData.data);
+          const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+          return { provider: "gemini", bytes, mime: part.inlineData.mimeType ?? "image/png" };
+        }
+        console.error("Gemini image response contained no image data");
+      } else {
+        console.error("Gemini image provider returned", r.status, await r.text());
+      }
+    } catch (e) {
+      console.error("Gemini image generation failed; using fallback", e);
+    }
+  }
   const seed = crypto.getRandomValues(new Uint32Array(1))[0];
   const r = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=1024&height=1024&nologo=true&seed=${seed}`);
   if (!r.ok) throw new HttpError(502, `image provider returned ${r.status}`);
-  return { provider: "pollinations", bytes: new Uint8Array(await r.arrayBuffer()), mime: r.headers.get("content-type") ?? "image/jpeg" };
+  return { provider: "pollinations-fallback", bytes: new Uint8Array(await r.arrayBuffer()), mime: r.headers.get("content-type") ?? "image/jpeg" };
 }
 
