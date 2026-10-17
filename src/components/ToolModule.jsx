@@ -53,7 +53,7 @@ export default function ToolModule({ tool, title, placeholder, showStyle }) {
 
       {result && (
         <div className="card glass result">
-          {result.data?.url && <img src={result.data.url} alt="Result" />}
+          {result.data?.url && <><a className="image-preview-link" href={result.data.url} target="_blank" rel="noreferrer"><img src={result.data.url} alt="Generated result — tap to open full size" /><span>Open full image ↗</span></a><a className="download-image" href={result.data.url} download={`shiwa-1792260334268.jpg`} target="_blank" rel="noreferrer">Download image ↓</a></>}
           <pre dir="auto">{result.reply}</pre>
         </div>
       )}
