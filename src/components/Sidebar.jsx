@@ -1,12 +1,12 @@
 import { supabase } from '../lib/supabase';
 
 const NAV_ITEMS = [
-  { id: 'chat', label: 'Home', icon: '▦' },
-  { id: 'image', label: 'Agent', icon: '⌘' },
+  { id: 'chat', label: 'Home', icon: '⌂' },
+  { id: 'image', label: 'Image AI', icon: '✧' },
   { id: 'instagram', label: 'ιиsтαgєям', icon: '◎' },
   { id: 'content', label: 'Tools', icon: '▣' },
-  { id: 'business', label: 'Stats', icon: '▥' },
-  { id: 'username', label: 'Profile', icon: '♙' },
+  { id: 'business', label: 'Ideas', icon: '◈' },
+  { id: 'username', label: 'Search', icon: '⌕' },
 ];
 
 export default function Sidebar({ modules, active, open, email, onSelect }) {
