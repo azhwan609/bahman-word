@@ -2,7 +2,7 @@ import { cors, json, admin, requireUser, HttpError, log, assertPermitted, comple
 import { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 const IG = /instagram|اینستاگرام|اینستا/i;
-const CONNECT = /connect|link|login|popup|pop-up|oauth|اتصال|وصل|لینک|پاپ ?اپ|پنجره/i;
+const CONNECT = /connect|link|login|authorize|permission|access|popup|pop-up|oauth|اتصال|وصل|لینک|مجوز|دسترسی|اجازه|ورود|پاپ ?اپ|پنجره/i;
 const PROFILE = /profile|account|پروفایل|اکانت/i;
 
 // Intent detection: Persian + English. Order matters (Instagram connect is checked first).
