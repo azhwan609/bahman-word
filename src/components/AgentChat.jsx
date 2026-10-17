@@ -3,7 +3,6 @@ import { callFn } from '../lib/api';
 import { connectInstagram } from '../lib/instagram';
 
 const INTRO = 'سلام دوست خوب من! 👋 من دستیار هوشمند شما برای مدیریت امکانات اکانت اینستاگرام، تولید محتوای حرفه‌ای، ایده‌پردازی درآمدزایی و جست‌وجوی نام‌های کاربری هستم. خواسته‌ات را بگو تا با هم انجامش بدهیم 🎯';
-const CONNECT_INTENT = /(instagram|اینستاگرام|اینستا)/i.test('');
 const isInstagramConnectRequest = (value) =>
   /(instagram|اینستاگرام|اینستا)/i.test(value) &&
   /(connect|link|login|authorize|permission|access|popup|pop-up|oauth|اتصال|وصل|ورود|مجوز|دسترسی|اجازه|لینک|پاپ\s?اپ|پنجره)/i.test(value);
