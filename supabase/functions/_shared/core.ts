@@ -89,9 +89,35 @@ export async function complete(mode: Mode, user: string, memoryNote = ""): Promi
     if (env("GEMINI_API_KEY")) return { provider: "gemini", text: await gemini(system, user) };
     if (env("OPENAI_COMPAT_BASE_URL")) return { provider: "open-source", text: await openAICompat(system, user) };
   } catch (e) {
-    console.error("text provider failed, using built-in fallback:", e);
+    console.error("configured text provider failed; trying free fallback:", e);
   }
-  return { provider: "builtin", text: `Built-in mode: set GEMINI_API_KEY or OPENAI_COMPAT_BASE_URL for full AI output.\n\nRequest: ${user}` };
+  // Keyless public fallback for useful AI responses when no provider secret is configured.
+  // This service is external and may have rate limits or availability changes.
+  try {
+    return { provider: "pollinations-free", text: await pollinationsText(system, user) };
+  } catch (e) {
+    console.error("free text fallback failed:", e);
+  }
+  return { provider: "builtin", text: "در حال حاضر سرویس هوش مصنوعی پاسخ‌گو نیست. کمی بعد دوباره تلاش کن؛ برای اتصال پایدارتر، کلید Gemini را در Secrets سمت سرور Supabase تنظیم کن." };
+}
+
+async function pollinationsText(system: string, user: string): Promise<string> {
+  const prompt = `${system}\n\nUser request (respond in the same language):\n${user}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+  try {
+    const r = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai`, {
+      method: "GET",
+      headers: { "Accept": "text/plain" },
+      signal: controller.signal,
+    });
+    if (!r.ok) throw new Error(`free text provider returned ${r.status}`);
+    const text = (await r.text()).trim();
+    if (!text || text.length < 2) throw new Error("free text provider returned an empty response");
+    return text.slice(0, 16000);
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function gemini(system: string, user: string): Promise<string> {
