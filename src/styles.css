@@ -93,3 +93,32 @@ input:focus, textarea:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgb
 @media (prefers-reduced-motion: reduce) {
   .ai-orb,.ai-orb::after,.pulse-wave path { animation:none; }
 }
+
+
+/* SHIWA refined dark professional theme */
+:root { --bg:#05080c; --glass:rgba(13,19,27,.94); --line:rgba(145,166,184,.16); --cyan:#8aa8b7; --text:#e7edf2; --muted:#9aa8b4; }
+body { background:linear-gradient(145deg,#0b1118 0%,#05080c 65%,#090d12 100%); }
+.glass { backdrop-filter:blur(18px); box-shadow:0 12px 34px rgba(0,0,0,.24); }
+.nav.on { color:#edf3f7; background:linear-gradient(100deg,rgba(115,145,162,.24),rgba(115,145,162,.10)); border-color:rgba(145,166,184,.35); box-shadow:inset 0 0 0 1px rgba(145,166,184,.08); }
+button.primary { color:#071018; background:linear-gradient(100deg,#a7bbc7,#d0d9df); box-shadow:0 5px 18px rgba(125,151,168,.13); }
+button.primary:hover { filter:brightness(1.05); }
+input:focus, textarea:focus { border-color:#8aa8b7; box-shadow:0 0 0 3px rgba(138,168,183,.12); }
+.bubble { border-color:rgba(145,166,184,.18); background:rgba(255,255,255,.035); }
+.bubble.user { background:rgba(115,145,162,.13); }
+.bubble p { font-size:clamp(17px,4.2vw,20px); line-height:1.9; font-family:Tahoma,"Noto Naskh Arabic","Vazirmatn",sans-serif; }
+.composer { background:rgba(9,14,20,.97); }
+.image-preview-link { display:block; color:var(--muted); text-decoration:none; }
+.image-preview-link img { display:block; width:100%; border-radius:14px; margin-top:10px; }
+.image-preview-link span { display:inline-block; padding:8px 0; font-size:13px; }
+.download-image { display:inline-flex; margin-top:10px; padding:10px 14px; border:1px solid var(--line); border-radius:10px; color:var(--text); text-decoration:none; }
+.mobile-bottom-nav { background:rgba(5,9,14,.98); border-top-color:rgba(145,166,184,.2); }
+.nav-mobile-item .nav-icon { color:#a9bbc7; }
+.nav-mobile-item.on { color:#edf3f7; background:rgba(138,168,183,.16); border:1px solid rgba(138,168,183,.25); box-shadow:none; }
+.nav-mobile-item.on .nav-icon { color:#d3dfe6; }
+@media (max-width:800px) {
+  .chat { min-height:0; }
+  .thread { padding:10px 5px; }
+  .bubble { max-width:96%; }
+  .composer { position:sticky; bottom:82px; }
+  .sidebar { background:rgba(7,11,16,.99); }
+}
