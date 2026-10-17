@@ -106,3 +106,21 @@ input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31
  .nav-mobile-item .badge{display:none}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important}}
+
+
+/* Slightly softer neon accents: preserve the palette while reducing saturation. */
+.nav-icon-wrap {
+  filter: saturate(.78);
+}
+.nav-item .badge {
+  filter: saturate(.78);
+}
+.nav-item {
+  --icon-softness: .78;
+}
+.nav-item:hover {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--c) 25%, transparent);
+}
+.nav-item.active {
+  box-shadow: inset 4px 0 0 var(--c), 0 0 12px color-mix(in srgb, var(--c) 19%, transparent);
+}
