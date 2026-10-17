@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { callFn } from '../lib/api';
 import { connectInstagram } from '../lib/instagram';
 
-const INTRO = 'I am your Creator AI agent. Try: "Create a product image of a gold sneaker", "write captions for my launch", or "لطفا لینک اتصال به اینستاگرام بفرست".';
+const INTRO = 'سلام دوست خوب من! 👋 من دستیار هوشمند شما برای مدیریت و کنترل امکانات اکانت اینستاگرام، تولید محتوای حرفه‌ای، ایده‌پردازی درآمدزایی و جست‌وجوی عمیق نام‌های کاربری هستم. خواسته‌ات را بگو تا با هم انجامش بدهیم 🎯';
 
 export default function AgentChat() {
   const [msgs, setMsgs] = useState([{ role: 'assistant', text: INTRO }]);
@@ -38,7 +38,7 @@ export default function AgentChat() {
           <div key={i} className={`bubble ${m.role}`} dir="auto">
             {m.tool && <span className="tag">{m.tool}</span>}
             <p>{m.text}</p>
-            {m.data?.url && <img src={m.data.url} alt="Generated" />}
+            {m.data?.url && <a className="image-preview-link" href={m.data.url} target="_blank" rel="noreferrer"><img src={m.data.url} alt="Generated image — tap to open full size" /><span>Open full image ↗</span></a>}
           </div>
         ))}
         {busy && <div className="bubble assistant"><p>Working…</p></div>}
