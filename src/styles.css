@@ -124,3 +124,14 @@ input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31
 .nav-item.active {
   box-shadow: inset 4px 0 0 var(--c), 0 0 12px color-mix(in srgb, var(--c) 19%, transparent);
 }
+
+/* Mobile one-tap focus mode: collapse bottom navigation to give chat the full screen. */
+.mobile-nav-power{display:none}
+@media(max-width:800px){
+ .mobile-nav-power{display:grid;place-items:center;position:fixed;z-index:40;right:12px;top:12px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(31,209,240,.7);background:rgba(3,12,20,.96);color:var(--cyan);box-shadow:0 0 16px rgba(31,209,240,.22);font-size:24px;line-height:1}
+ .mobile-nav-power.is-open{top:auto;bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+ .mobile-nav-power span{display:block}
+ .mobile-bottom-nav.nav-hidden{display:none}
+ .stage{padding-bottom:8px}
+ .topbar{padding-right:54px}
+}
