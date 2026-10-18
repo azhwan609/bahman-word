@@ -19,6 +19,7 @@ export default function App() {
   const [session, setSession] = useState(undefined);
   const [open, setOpen] = useState(true);
   const [active, setActive] = useState('chat');
+  const [mobileNavOpen, setMobileNavOpen] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -32,8 +33,9 @@ export default function App() {
   const current = MODULES.find((m) => m.id === active);
   return (
     <div className="shell">
-      <Sidebar modules={MODULES} active={active} open={open} email={session.user.email}
+      <Sidebar modules={MODULES} active={active} open={open} navVisible={mobileNavOpen} email={session.user.email}
         onSelect={(id) => { setActive(id); if (window.innerWidth < 800) setOpen(false); }} />
+      <button className={"mobile-nav-power" + (mobileNavOpen ? " is-open" : "")} type="button" onClick={() => setMobileNavOpen((visible) => !visible)} aria-label={mobileNavOpen ? "Hide navigation for full chat" : "Show navigation"} title={mobileNavOpen ? "Hide menu / Full chat" : "Show menu"}><span>{mobileNavOpen ? "⏻" : "☰"}</span></button>
       <main className="stage">
         <header className="topbar glass">
           <button className="icon" onClick={() => setOpen(!open)} aria-label="Toggle menu">☰</button>
