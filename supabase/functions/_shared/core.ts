@@ -121,7 +121,7 @@ async function pollinationsText(system: string, user: string): Promise<string> {
 }
 
 async function gemini(system: string, user: string): Promise<string> {
-  const model = env("GEMINI_MODEL") || "gemini-2.0-flash";
+  const model = env("GEMINI_MODEL") || "gemini-3.8-flash";
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": env("GEMINI_API_KEY") },
@@ -147,7 +147,7 @@ export async function generateImage(prompt: string, style: string) {
   const full = `${prompt}, ${style} style, professional composition, high detail`;
   if (env("GEMINI_API_KEY")) {
     try {
-      const model = env("GEMINI_IMAGE_MODEL") || "gemini-2.5-flash-image";
+      const model = env("GEMINI_IMAGE_MODEL") || "gemini-3.1-flash-image";
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": env("GEMINI_API_KEY") },
