@@ -15,7 +15,7 @@ function PulseLogo({ small = false }) {
   </div>;
 }
 
-export default function Sidebar({ modules, active, open, email, onSelect }) {
+export default function Sidebar({ modules, active, open, navVisible = true, email, onSelect }) {
   const visibleItems = NAV_ITEMS.filter((item) => modules.some((module) => module.id === item.id));
   const renderItem = (item, mobile = false) => (
     <button key={item.id} type="button"
@@ -54,6 +54,6 @@ export default function Sidebar({ modules, active, open, email, onSelect }) {
       <div className="account-email">{email}</div>
       <button className="link" onClick={() => supabase.auth.signOut()}>Sign out</button>
     </aside>
-    <nav className="mobile-bottom-nav" aria-label="Main navigation">{visibleItems.map((item) => renderItem(item, true))}</nav>
+    <nav className={"mobile-bottom-nav" + (navVisible ? "" : " nav-hidden")} aria-label="Main navigation">{visibleItems.map((item) => renderItem(item, true))}</nav>
   </>;
 }
