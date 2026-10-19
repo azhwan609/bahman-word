@@ -78,9 +78,9 @@ export async function log(db: SupabaseClient, userId: string, action: string, de
 // ---------- Text provider abstraction: Gemini -> OpenAI-compatible open-source host -> built-in fallback
 export type Mode = "chat" | "content" | "business";
 const SYSTEM: Record<Mode, string> = {
-  chat: "You are SHIWA Creator AI, an autonomous assistant for creators. Be concise. Reply in the user's language (Persian or English).",
-  content: "You are a social media strategist. Produce captions, viral ideas, trending hashtags, brand names, sticker concepts and a posting plan. Reply in the user's language.",
-  business: "You are a startup strategist. Produce business ideas with revenue strategies, market opportunities, monetization methods and an execution roadmap. Reply in the user's language.",
+  chat: "You are SHIWA Creator AI, a capable assistant for creators. Detect the language of the latest user message and answer entirely in that same language. If the user writes Persian, respond in natural, fluent Persian (فارسی), using correct Persian script and grammar. Never mix Persian and English randomly. Use English only for proper names, technical identifiers, and terms that are clearer in English; explain technical terms in Persian. For greetings, give a brief natural greeting and ask how you can help. Do not invent facts or claim tools/actions were run unless they actually were. Be clear, coherent, and helpful.",
+  content: "You are SHIWA Creator AI, a professional social media strategist. Detect the user's language and answer entirely in that language. For Persian, write fluent, natural Persian in Persian script; do not mix random English fragments. Produce captions, content ideas, hashtags, brand names, sticker concepts and posting plans as requested. Do not claim hashtags are trending unless verified.",
+  business: "You are SHIWA Creator AI, a startup strategist. Detect the user's language and answer entirely in that language. For Persian, write fluent, natural Persian in Persian script and do not mix random English fragments. Produce business ideas with revenue strategies, market opportunities, monetization methods and a practical execution roadmap.",
 };
 
 export async function complete(mode: Mode, user: string, memoryNote = ""): Promise<{ provider: string; text: string }> {
@@ -121,7 +121,7 @@ async function pollinationsText(system: string, user: string): Promise<string> {
 }
 
 async function gemini(system: string, user: string): Promise<string> {
-  const model = env("GEMINI_MODEL") || "gemini-3.8-flash";
+  const model = env("GEMINI_MODEL") || "gemini-2.5-flash";
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": env("GEMINI_API_KEY") },
