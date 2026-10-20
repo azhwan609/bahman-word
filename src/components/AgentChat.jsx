@@ -52,7 +52,7 @@ export default function AgentChat() {
           setMsgs((m) => [...m, { role: 'error', text: error.message || 'ساخت لینک اتصال Telegram انجام نشد.' }]);
         }
       }
-      if (res.action?.type === 'instagram_connect') {
+      if (res.action?.type === 'instagram_connect' || wantsInstagramConnect) {
         if (!popup) {
           const direct = await callFn('instagram-oauth', { action: 'start' });
           setMsgs((m) => [...m, { role: 'assistant', text: 'لینک امن اتصال اینستاگرام آماده است. روی لینک بزن تا صفحه رسمی Instagram برای ورود و تأیید مجوزها باز شود.', data: { connectUrl: direct.url } }]);
