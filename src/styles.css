@@ -135,3 +135,5 @@ input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31
  .stage{padding-bottom:8px}
  .topbar{padding-right:54px}
 }
+
+.auth-links{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}.auth .ghost.wide{width:100%;margin:4px 0 8px}
