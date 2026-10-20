@@ -406,7 +406,7 @@ export async function generateImage(prompt: string, style: string) {
 
   if (env("GEMINI_API_KEY")) {
     try {
-      const model = env("GEMINI_IMAGE_MODEL") || "gemini-3.1-flash-image";
+      const model = env("GEMINI_IMAGE_MODEL") || "gemini-2.5-flash-image";
 
       const r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
