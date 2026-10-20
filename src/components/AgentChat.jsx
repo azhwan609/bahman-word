@@ -6,6 +6,11 @@ const INTRO = 'سلام دوست خوب من! 👋 من دستیار هوشمن�
 const isInstagramConnectRequest = (value) =>
   /(instagram|اینستاگرام|اینستا)/i.test(value) &&
   /(connect|link|login|authorize|permission|access|popup|pop-up|oauth|اتصال|وصل|ورود|مجوز|دسترسی|اجازه|لینک|پاپ\s?اپ|پنجره)/i.test(value);
+const isTelegramConnectRequest = (value) =>
+  /(telegram|تلگرام)/i.test(value) &&
+  /(connect|link|login|authorize|permission|access|اتصال|وصل|ورود|مجوز|دسترسی|اجازه|لینک)/i.test(value);
+const isBothConnectorsRequest = (value) =>
+  /(connector|integration|connectors|integrations|سرویس(?:ها)?|اتصال همه|هر دو|both|all integrations|connection links|لینک اتصال)/i.test(value);
 
 export default function AgentChat() {
   const [msgs, setMsgs] = useState([{ role: 'assistant', text: INTRO }]);
@@ -23,18 +28,30 @@ export default function AgentChat() {
     // Open synchronously during the user gesture, before awaiting the Edge Function,
     // so browser popup blockers do not block the real OAuth flow.
     let popup = null;
-    const wantsInstagramConnect = isInstagramConnectRequest(text);
-    if (wantsInstagramConnect) {
-      popup = window.open('about:blank', 'shiwa-instagram', 'popup=yes,width=520,height=720');
-      if (!popup) {
-        setMsgs((m) => [...m, { role: 'assistant', text: 'برای اتصال اینستاگرام، پنجره‌های پاپ‌آپ را برای این سایت مجاز کن و دوباره درخواست بده. می‌توانم لینک اتصال امن را هم در همین چت باز کنم.' }]);
-      }
+    let telegramPopup = null;
+    const wantsBothConnectors = isBothConnectorsRequest(text);
+    const wantsInstagramConnect = isInstagramConnectRequest(text) || wantsBothConnectors;
+    const wantsTelegramConnect = isTelegramConnectRequest(text) || wantsBothConnectors;
+    if (wantsInstagramConnect) popup = window.open('about:blank', 'shiwa-instagram', 'popup=yes,width=520,height=720');
+    if (wantsTelegramConnect) telegramPopup = window.open('about:blank', 'shiwa-telegram', 'popup=yes,width=520,height=720');
+    if ((wantsInstagramConnect && !popup) || (wantsTelegramConnect && !telegramPopup)) {
+      setMsgs((m) => [...m, { role: 'assistant', text: 'اگر پنجره‌ای باز نشد، pop-up را برای این سایت مجاز کن؛ لینک جایگزین را هم در همین گفتگو نمایش می‌دهم.' }]);
     }
 
     try {
       const res = await callFn('agent', { message: text, conversation_id: convId });
       setConvId(res.conversation_id);
       setMsgs((m) => [...m, { role: 'assistant', text: res.reply, data: res.data, tool: res.tool }]);
+      if (wantsTelegramConnect) {
+        try {
+          const telegram = await callFn('telegram-link', { action: 'start' });
+          if (telegramPopup && !telegramPopup.closed) telegramPopup.location.href = telegram.url;
+          setMsgs((m) => [...m, { role: 'assistant', text: 'لینک امن اتصال Telegram آماده است. آن را باز کن و Start را در ربات بزن.', data: { telegramConnectUrl: telegram.url } }]);
+        } catch (error) {
+          if (telegramPopup && !telegramPopup.closed) telegramPopup.close();
+          setMsgs((m) => [...m, { role: 'error', text: error.message || 'ساخت لینک اتصال Telegram انجام نشد.' }]);
+        }
+      }
       if (res.action?.type === 'instagram_connect') {
         if (!popup) {
           const direct = await callFn('instagram-oauth', { action: 'start' });
@@ -62,6 +79,7 @@ export default function AgentChat() {
             {m.tool && <span className="tag">{m.tool}</span>}
             <p>{m.text}</p>
             {m.data?.connectUrl && <a href={m.data.connectUrl} target="_blank" rel="noreferrer" className="primary connect-link">اتصال امن به Instagram ↗</a>}
+            {m.data?.telegramConnectUrl && <a href={m.data.telegramConnectUrl} target="_blank" rel="noreferrer" className="primary connect-link">اتصال امن به Telegram ↗</a>}
             {m.data?.url && <a className="image-preview-link" href={m.data.url} target="_blank" rel="noreferrer"><img src={m.data.url} alt="Generated image — tap to open full size" /><span>Open full image ↗</span></a>}
           </div>
         ))}
