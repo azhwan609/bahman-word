@@ -17,18 +17,74 @@ export const MODULES = [
 
 export default function App() {
   const [session, setSession] = useState(undefined);
+  const [authError, setAuthError] = useState('');
   const [open, setOpen] = useState(true);
   const [active, setActive] = useState('chat');
   const [mobileNavOpen, setMobileNavOpen] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-    return () => sub.subscription.unsubscribe();
+    let mounted = true;
+    let subscription;
+    try {
+      const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        if (mounted) {
+          setAuthError('');
+          setSession(nextSession);
+        }
+      });
+      subscription = data?.subscription;
+    } catch (error) {
+      if (mounted) {
+        setAuthError(error?.message || 'Could not initialize authentication.');
+        setSession(null);
+      }
+    }
+
+    supabase.auth.getSession()
+      .then(({ data, error }) => {
+        if (!mounted) return;
+        if (error) {
+          setAuthError(error.message || 'Could not connect to Supabase authentication.');
+          setSession(null);
+          return;
+        }
+        setSession(data?.session ?? null);
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        setAuthError(error?.message || 'Could not connect to Supabase. Check the Render environment variables and Supabase project URL.');
+        setSession(null);
+      });
+
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
   }, []);
 
-  if (session === undefined) return null;
-  if (!session) return <AuthScreen />;
+  if (session === undefined) {
+    return (
+      <div style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: '#03060b', color: '#e6f1ff', fontFamily: 'system-ui,sans-serif', padding: 24, textAlign: 'center' }}>
+        <div>
+          <div style={{ color: '#1fd1f0', fontSize: 22, fontWeight: 700 }}>SHIWA Creator Hub</div>
+          <p>Connecting securely…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <>
+        {authError && (
+          <div role="alert" style={{ padding: '12px 16px', background: '#2a1015', color: '#ffd9df', borderBottom: '1px solid #8b3342', fontFamily: 'system-ui,sans-serif', overflowWrap: 'anywhere' }}>
+            Supabase connection issue: {authError}
+          </div>
+        )}
+        <AuthScreen />
+      </>
+    );
+  }
 
   const current = MODULES.find((m) => m.id === active);
   return (
@@ -51,4 +107,3 @@ export default function App() {
     </div>
   );
 }
-
