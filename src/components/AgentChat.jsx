@@ -19,7 +19,7 @@ function ConnectorShowcase({ onInstagram, onTelegram, busy, links }) {
         <div style={{ fontWeight: 800 }}>Instagram</div>
         <div style={{ fontSize: 12, color: '#c8c1d5', marginTop: 3 }}>اتصال امن از طریق صفحه رسمی Instagram / Meta</div>
         <button type="button" onClick={onInstagram} disabled={busy} style={{ ...button, background: 'linear-gradient(100deg,#f97316,#db2777,#7c3aed)' }}>{busy ? 'در حال آماده‌سازی…' : 'اتصال به Instagram ↗'}</button>
-        {links.instagram && <a href={links.instagram} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 8, color: '#f0b5ff', fontSize: 12 }}>اگر پنجره باز نشد، اینجا بزن ↗</a>}
+        {links.instagram && <a href={links.instagram} target="_self" rel="noreferrer" style={{ display: 'inline-block', marginTop: 8, color: '#f0b5ff', fontSize: 12 }}>اگر پنجره باز نشد، همین‌جا ادامه بده ↗</a>}
       </div>
     </div>
     <div style={card}>
@@ -28,7 +28,7 @@ function ConnectorShowcase({ onInstagram, onTelegram, busy, links }) {
         <div style={{ fontWeight: 800 }}>Telegram</div>
         <div style={{ fontSize: 12, color: '#c8c1d5', marginTop: 3 }}>اتصال به ربات SHIWA در تلگرام</div>
         <button type="button" onClick={onTelegram} disabled={busy} style={{ ...button, background: 'linear-gradient(100deg,#38bdf8,#1674d1)' }}>{busy ? 'در حال آماده‌سازی…' : 'اتصال به Telegram ↗'}</button>
-        {links.telegram && <a href={links.telegram} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 8, color: '#9bdcff', fontSize: 12 }}>اگر پنجره باز نشد، اینجا بزن ↗</a>}
+        {links.telegram && <a href={links.telegram} target="_self" rel="noreferrer" style={{ display: 'inline-block', marginTop: 8, color: '#9bdcff', fontSize: 12 }}>اگر پنجره باز نشد، همین‌جا ادامه بده ↗</a>}
       </div>
     </div>
     <div style={{ color: '#aaa5b7', fontSize: 11, marginTop: 12 }}>🛡️ SHIWA رمز عبور حساب‌های شما را درخواست نمی‌کند.</div>
@@ -59,7 +59,7 @@ export default function AgentChat() {
       const username = await connectInstagram(popup);
       setMsgs((m) => [...m, { role: 'assistant', text: `اتصال اینستاگرام با موفقیت انجام شد: @${username}` }]);
     } catch (error) {
-      if (popup && !popup.closed) { try { popup.document.body.innerHTML = '<h2>SHIWA · Instagram</h2><p>اتصال انجام نشد. این پنجره را ببند و از لینک جایگزین استفاده کن.</p>'; } catch { popup.close(); } }
+      if (popup && !popup.closed) { try { popup.document.body.innerHTML = `<meta charset="utf-8"><body style="background:#080d17;color:#f7f4ff;font:16px sans-serif;padding:24px"><h2>SHIWA · Instagram</h2><p>${String(error?.message || 'اتصال انجام نشد.').replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch]))}</p><p>به SHIWA برگرد و لینک جایگزین را انتخاب کن.</p></body>`; } catch { popup.close(); } }
       setMsgs((m) => [...m, { role: 'error', text: error?.message || 'اتصال Instagram انجام نشد.' }]);
     } finally { setConnectorBusy(false); }
   };
@@ -76,7 +76,7 @@ export default function AgentChat() {
       if (popup) popup.location.href = result.url;
       else setMsgs((m) => [...m, { role: 'assistant', text: 'مرورگر پنجره را مسدود کرد؛ از لینک جایگزین داخل ویترین اتصال استفاده کن.' }]);
     } catch (error) {
-      if (popup && !popup.closed) { try { popup.document.body.innerHTML = '<h2>SHIWA · Telegram</h2><p>ساخت لینک اتصال ناموفق بود. پیام خطا را در SHIWA بررسی کن.</p>'; } catch { popup.close(); } }
+      if (popup && !popup.closed) { try { popup.document.body.innerHTML = `<meta charset="utf-8"><body style="background:#080d17;color:#f7f4ff;font:16px sans-serif;padding:24px"><h2>SHIWA · Telegram</h2><p>${String(error?.message || 'ساخت لینک اتصال ناموفق بود.').replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch]))}</p><p>به SHIWA برگرد و لینک جایگزین را انتخاب کن.</p></body>`; } catch { popup.close(); } }
       setMsgs((m) => [...m, { role: 'error', text: error?.message || 'اتصال Telegram انجام نشد.' }]);
     } finally { setConnectorBusy(false); }
   };
