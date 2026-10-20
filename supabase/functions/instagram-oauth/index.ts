@@ -5,11 +5,14 @@ const REDIRECT = () => `${env("SUPABASE_URL")}/functions/v1/instagram-oauth?acti
 
 function popupHtml(payload: Record<string, unknown>, ok: boolean) {
   const origin = env("APP_ORIGIN");
+  const message = ok
+    ? "اتصال اینستاگرام انجام شد. به SHIWA برگرد و وضعیت اتصال را تازه‌سازی کن."
+    : "اتصال اینستاگرام انجام نشد. به SHIWA برگرد و تنظیمات اتصال را بررسی کن.";
+  const safeOrigin = JSON.stringify(origin);
+  const safePayload = JSON.stringify(payload);
   return new Response(
-    `<!doctype html><meta charset="utf-8"><body style="background:#050b12;color:#cdeef5;font-family:sans-serif;text-align:center;padding-top:30vh">
-<p>${ok ? "Instagram connected. This window will close." : "Connection failed. Close this window and try again."}</p>
-<script>window.opener&&window.opener.postMessage(${JSON.stringify(payload)},${JSON.stringify(origin)});setTimeout(()=>window.close(),900);</script></body>`,
-    { headers: { "Content-Type": "text/html; charset=utf-8" } },
+    `<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SHIWA · Instagram</title><body style="background:#050b12;color:#cdeef5;font:16px sans-serif;text-align:center;padding:12vh 24px"><h2>SHIWA · Instagram</h2><p>${message}</p><a href="${origin || "/"}" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#9333ea;color:white;text-decoration:none">بازگشت به SHIWA</a><script>try{if(window.opener){window.opener.postMessage(${safePayload},${safeOrigin});setTimeout(()=>window.close(),900)}}catch(e){}</script></body></html>`,
+    { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } },
   );
 }
 
@@ -55,6 +58,13 @@ Deno.serve(async (req) => {
     const db = admin();
 
     if (action === "start") {
+      const missing = ["INSTAGRAM_APP_ID", "INSTAGRAM_APP_SECRET", "APP_ORIGIN", "STATE_SECRET", "TOKEN_ENCRYPTION_KEY"].filter((name) => !env(name).trim());
+      if (missing.length) throw new HttpError(503, `Instagram connection configuration is incomplete: ${missing.join(", ")}`);
+      const encodedKey = env("TOKEN_ENCRYPTION_KEY").trim();
+      let decodedKey: Uint8Array;
+      try { decodedKey = Uint8Array.from(atob(encodedKey), (ch) => ch.charCodeAt(0)); }
+      catch { throw new HttpError(503, "TOKEN_ENCRYPTION_KEY must be base64-encoded 32 random bytes"); }
+      if (decodedKey.length !== 32) throw new HttpError(503, "TOKEN_ENCRYPTION_KEY must decode to exactly 32 bytes");
       const state = await signState(`${user.id}:${Date.now()}:${crypto.randomUUID()}`);
       const authUrl = "https://www.instagram.com/oauth/authorize?" + new URLSearchParams({
         client_id: env("INSTAGRAM_APP_ID"), redirect_uri: REDIRECT(), scope: "instagram_business_basic", response_type: "code", state,

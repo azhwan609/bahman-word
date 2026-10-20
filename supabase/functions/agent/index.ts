@@ -57,7 +57,8 @@ const handlers: Record<string, (c: Ctx) => Promise<Result>> = {
 
   generate_image: async ({ db, userId, message, style }) => {
     const img = await generateImage(message, style);
-    const path = `${userId}/${crypto.randomUUID()}.jpg`;
+    const extension = img.mime.includes("png") ? "png" : img.mime.includes("webp") ? "webp" : "jpg";
+    const path = `${userId}/${crypto.randomUUID()}.${extension}`;
     const up = await db.storage.from("creator-assets").upload(path, img.bytes, { contentType: img.mime });
     if (up.error) throw new HttpError(500, up.error.message);
     const { data: signed } = await db.storage.from("creator-assets").createSignedUrl(path, 3600);

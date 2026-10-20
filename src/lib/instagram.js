@@ -43,7 +43,11 @@ export async function connectInstagram(existingPopup) {
       popup.focus?.();
     });
   } catch (error) {
-    if (popup && !popup.closed) popup.close();
+    if (popup && !popup.closed) {
+      try {
+        popup.document.body.innerHTML = '<h2>SHIWA · Instagram</h2><p>آماده‌سازی اتصال ناموفق بود. به صفحه SHIWA برگرد و متن خطا را بررسی کن.</p>';
+      } catch { popup.close(); }
+    }
     throw error;
   }
 }
