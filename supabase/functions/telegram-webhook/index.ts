@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const chat = message?.chat;
     const from = message?.from;
     const text = String(message?.text ?? "");
-    if (!chat?.id || !from || !text.startsWith("/start")) return json({ ok: true });
+    if (!chat?.id || !from || chat.type !== "private" || String(chat.id) !== String(from.id) || !text.startsWith("/start")) return json({ ok: true });
 
     const payload = text.trim().split(/\s+/)[1];
     if (!payload) {
