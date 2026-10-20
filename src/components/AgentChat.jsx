@@ -47,6 +47,7 @@ export default function AgentChat() {
     setConnectorBusy(true);
     setConnectorLinks((v) => ({ ...v, instagram: '' }));
     const popup = window.open('about:blank', 'shiwa-instagram', 'popup=yes,width=520,height=720');
+    if (popup) { try { popup.document.write('<!doctype html><meta charset="utf-8"><title>SHIWA</title><body style="background:#080d17;color:#f7f4ff;font:16px sans-serif;padding:32px"><h2>SHIWA · Instagram</h2><p>در حال آماده‌سازی اتصال امن…</p><p>این پنجره را نبند.</p></body>'); popup.document.close(); } catch {} }
     try {
       if (!popup) {
         const result = await callFn('instagram-oauth', { action: 'start' });
@@ -58,7 +59,7 @@ export default function AgentChat() {
       const username = await connectInstagram(popup);
       setMsgs((m) => [...m, { role: 'assistant', text: `اتصال اینستاگرام با موفقیت انجام شد: @${username}` }]);
     } catch (error) {
-      if (popup && !popup.closed) popup.close();
+      if (popup && !popup.closed) { try { popup.document.body.innerHTML = '<h2>SHIWA · Instagram</h2><p>اتصال انجام نشد. این پنجره را ببند و از لینک جایگزین استفاده کن.</p>'; } catch { popup.close(); } }
       setMsgs((m) => [...m, { role: 'error', text: error?.message || 'اتصال Instagram انجام نشد.' }]);
     } finally { setConnectorBusy(false); }
   };
@@ -67,6 +68,7 @@ export default function AgentChat() {
     setConnectorBusy(true);
     setConnectorLinks((v) => ({ ...v, telegram: '' }));
     const popup = window.open('about:blank', 'shiwa-telegram', 'popup=yes,width=520,height=720');
+    if (popup) { try { popup.document.write('<!doctype html><meta charset="utf-8"><title>SHIWA</title><body style="background:#080d17;color:#f7f4ff;font:16px sans-serif;padding:32px"><h2>SHIWA · Telegram</h2><p>در حال آماده‌سازی لینک اتصال امن…</p></body>'); popup.document.close(); } catch {} }
     try {
       const result = await callFn('telegram-link', { action: 'start' });
       if (!result?.url) throw new Error('لینک اتصال تلگرام از سرور دریافت نشد.');
@@ -74,7 +76,7 @@ export default function AgentChat() {
       if (popup) popup.location.href = result.url;
       else setMsgs((m) => [...m, { role: 'assistant', text: 'مرورگر پنجره را مسدود کرد؛ از لینک جایگزین داخل ویترین اتصال استفاده کن.' }]);
     } catch (error) {
-      if (popup && !popup.closed) popup.close();
+      if (popup && !popup.closed) { try { popup.document.body.innerHTML = '<h2>SHIWA · Telegram</h2><p>ساخت لینک اتصال ناموفق بود. پیام خطا را در SHIWA بررسی کن.</p>'; } catch { popup.close(); } }
       setMsgs((m) => [...m, { role: 'error', text: error?.message || 'اتصال Telegram انجام نشد.' }]);
     } finally { setConnectorBusy(false); }
   };
