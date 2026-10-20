@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { callFn } from '../lib/api';
 import { connectInstagram } from '../lib/instagram';
+import TelegramConnect from './TelegramConnect';
 
 export default function InstagramLite() {
   const [status, setStatus] = useState(null);
@@ -41,6 +42,7 @@ export default function InstagramLite() {
         {profile && <p className="result-text">{profile}</p>}
         {err && <p className="err">{err}</p>}
       </div>
+      <TelegramConnect />
     </section>
   );
 }
