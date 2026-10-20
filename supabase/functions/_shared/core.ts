@@ -193,7 +193,7 @@ export async function log(
 }
 
 // Text provider abstraction.
-// Priority: OpenRouter -> Gemini -> existing keyless fallback.
+// Priority: Gemini -> OpenAI-compatible provider -> existing keyless fallback.
 export type Mode = "chat" | "content" | "business";
 
 const SYSTEM: Record<Mode, string> = {
@@ -213,7 +213,20 @@ export async function complete(
   const system = SYSTEM[mode] +
     (memoryNote ? `\nKnown about the user: ${memoryNote}` : "");
 
-  // Prefer OpenRouter when its required secrets are configured.
+  // Gemini is the preferred text provider when GEMINI_API_KEY is configured.
+  if (env("GEMINI_API_KEY")) {
+    try {
+      const text = await gemini(system, user);
+      return { provider: "gemini", text };
+    } catch (e) {
+      console.error(
+        "Gemini request failed; attempting OpenAI-compatible provider:",
+        e instanceof Error ? e.message : "unknown error",
+      );
+    }
+  }
+
+  // OpenAI-compatible fallback (for example, OpenRouter).
   if (
     env("OPENAI_COMPAT_BASE_URL") &&
     env("OPENAI_COMPAT_API_KEY") &&
@@ -224,20 +237,7 @@ export async function complete(
       return { provider: "openrouter", text };
     } catch (e) {
       console.error(
-        "OpenRouter request failed; attempting next provider:",
-        e instanceof Error ? e.message : "unknown error",
-      );
-    }
-  }
-
-  // Gemini fallback.
-  if (env("GEMINI_API_KEY")) {
-    try {
-      const text = await gemini(system, user);
-      return { provider: "gemini", text };
-    } catch (e) {
-      console.error(
-        "Gemini request failed; attempting free fallback:",
+        "OpenAI-compatible request failed; attempting free fallback:",
         e instanceof Error ? e.message : "unknown error",
       );
     }
