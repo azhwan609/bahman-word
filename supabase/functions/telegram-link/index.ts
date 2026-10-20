@@ -27,9 +27,17 @@ Deno.serve(async (req) => {
 
     const username = botUsername();
     if (!username) return json({ error: "TELEGRAM_BOT_USERNAME is not configured in Supabase Edge Function secrets." }, 503);
+    if (!/^[A-Za-z][A-Za-z0-9_]{2,29}bot$/i.test(username) || username.length < 5 || username.length > 32) {
+      return json({ error: "TELEGRAM_BOT_USERNAME must be the valid bot username from BotFather, without @." }, 503);
+    }
+    if (!(Deno.env.get("STATE_SECRET") ?? "").trim()) {
+      return json({ error: "STATE_SECRET is missing in Supabase Edge Function secrets." }, 503);
+    }
     const payload = await signState(`${user.id}:${Date.now()}:${crypto.randomUUID()}`);
     return json({ url: `https://t.me/${encodeURIComponent(username)}?start=${encodeURIComponent(payload)}` });
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : "Telegram link request failed" }, 400);
+    const message = error instanceof Error ? error.message : "Telegram link request failed";
+    const status = /not configured|missing|must be configured/i.test(message) ? 503 : 400;
+    return json({ error: message }, status);
   }
 });
