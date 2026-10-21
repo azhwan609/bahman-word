@@ -62,6 +62,10 @@ input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31
 .auth form{display:flex;flex-direction:column;gap:12px;margin-top:12px}
 .err{color:#ff6b7a;font-size:14px}.muted{color:var(--muted);font-size:14px}
 .chat{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:rgba(3,7,12,.92);backdrop-filter:blur(6px)}
+.connection-actions{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.connection-button{display:flex;align-items:center;gap:9px;min-height:38px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(12,28,39,.9);color:var(--text);cursor:pointer}
+.connection-button small{color:var(--muted);font-size:12px}
+.connection-button:disabled{opacity:.55;cursor:wait}
 .thread{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:20px}
 .bubble{max-width:80%;padding:13px 17px;border-radius:18px;border:1px solid #16364a;background:linear-gradient(180deg,#071521,#050c14);animation:rise .35s ease;align-self:flex-start}
 .bubble p{margin:0;white-space:pre-wrap;line-height:1.85;font-size:clamp(15px,1.3vw,18px);font-family:Vazirmatn,Tahoma,sans-serif}
