@@ -137,3 +137,40 @@ input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31
 }
 
 .auth-links{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}.auth .ghost.wide{width:100%;margin:4px 0 8px}
+
+/* Premium responsive social connection cards for the active SHIWA feature deployment. */
+.connector-showcase{width:100%;max-width:760px;margin-top:16px;padding:18px;border:1px solid rgba(108,151,190,.25);border-radius:24px;background:linear-gradient(145deg,rgba(13,19,33,.98),rgba(4,9,16,.98));box-shadow:0 18px 48px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.04);color:#eef5ff}
+.connector-showcase__header{display:flex;align-items:flex-start;gap:13px;margin-bottom:17px}
+.connector-showcase__spark{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,rgba(31,209,240,.18),rgba(162,91,255,.2));border:1px solid rgba(141,154,255,.3);color:#d8c6ff;font-size:24px}
+.connector-showcase__header h3{margin:3px 0 4px;font-size:18px;color:#f5f7ff}
+.connector-showcase__header p{margin:0;color:#9caec2;font-size:12px;line-height:1.8}
+.connector-showcase__eyebrow{color:#8da8c4;font:700 9px/1.4 system-ui,sans-serif;letter-spacing:1.5px}
+.connector-showcase__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.social-connect-card{--social-accent:#d56ec4;position:relative;isolation:isolate;display:flex;flex-direction:column;gap:13px;min-width:0;overflow:hidden;padding:16px;border-radius:20px;border:1px solid color-mix(in srgb,var(--social-accent) 32%,#152536);background:linear-gradient(150deg,rgba(15,22,36,.98),rgba(5,10,18,.98) 74%);box-shadow:0 12px 28px rgba(0,0,0,.22)}
+.social-connect-card:before{content:"";position:absolute;z-index:-1;inset:-60% -10% auto 20%;height:170px;background:radial-gradient(ellipse,color-mix(in srgb,var(--social-accent) 18%,transparent),transparent 68%);pointer-events:none}
+.social-connect-card--instagram{--social-accent:#e879b8}
+.social-connect-card--telegram{--social-accent:#42b8ed}
+.social-connect-card__top{display:flex;align-items:center;gap:10px;min-width:0}
+.social-connect-card__logo{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:15px;border:1px solid color-mix(in srgb,var(--social-accent) 58%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--social-accent) 22%,#101522),#080d16);color:var(--social-accent);font-size:29px;font-weight:800}
+.social-connect-card--instagram .social-connect-card__logo{background:linear-gradient(145deg,rgba(246,88,130,.24),rgba(136,77,255,.2),#080d16)}
+.social-connect-card__title{flex:1;min-width:0}
+.social-connect-card__title h4{margin:3px 0 0;color:#f4f7ff;font-size:20px;line-height:1.3}
+.social-connect-card__eyebrow{display:block;color:var(--social-accent);font:700 8px/1.4 system-ui,sans-serif;letter-spacing:1px}
+.social-connect-card__secure{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;border:1px solid rgba(106,222,177,.25);border-radius:50%;background:rgba(106,222,177,.08);color:#6adeb1;font-size:13px;font-weight:900}
+.social-connect-card__description{margin:0;color:#a9bacd;font-size:12px;line-height:1.9;min-height:48px}
+.social-connect-card__trust{display:flex;align-items:flex-start;gap:7px;color:#a9dccc;font-size:10px;line-height:1.7}
+.social-connect-card__trust span{display:grid;place-items:center;flex:0 0 17px;width:17px;height:17px;border-radius:50%;background:rgba(106,222,177,.12);color:#6adeb1;font-weight:900}
+.social-connect-card__action{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:46px;padding:11px 13px;border:1px solid color-mix(in srgb,var(--social-accent) 60%,transparent);border-radius:13px;background:linear-gradient(110deg,color-mix(in srgb,var(--social-accent) 22%,#101522),rgba(8,13,23,.96));color:#fff;font:700 12px Vazirmatn,Tahoma,sans-serif;text-align:right;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.social-connect-card__action:hover:not(:disabled){transform:translateY(-1px);border-color:var(--social-accent);box-shadow:0 8px 20px color-mix(in srgb,var(--social-accent) 16%,transparent)}
+.social-connect-card__action:focus-visible,.social-connect-card__fallback a:focus-visible{outline:2px solid var(--social-accent);outline-offset:3px}
+.social-connect-card__action:disabled{opacity:.6;cursor:wait}
+.social-connect-card__action span:last-child{color:var(--social-accent);font-size:19px}
+.social-connect-card__footer{display:flex;align-items:center;gap:7px;color:#748ca2;font-size:9px}
+.social-connect-card__footer span{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#6adeb1;box-shadow:0 0 7px rgba(106,222,177,.45)}
+.social-connect-card__fallback{padding:10px;border:1px solid rgba(255,190,100,.28);border-radius:12px;background:rgba(255,190,100,.06)}
+.social-connect-card__fallback p{margin:0 0 8px;color:#ffd9a1;font-size:11px;line-height:1.8}
+.social-connect-card__fallback a{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:7px 10px;border:1px solid rgba(255,190,100,.45);border-radius:9px;color:#ffe2b5;text-decoration:none;font-size:11px;font-weight:700}
+.connector-showcase__privacy{display:flex;align-items:center;gap:8px;margin-top:14px;color:#8da6bc;font-size:10px;line-height:1.7}
+.connector-showcase__privacy span{color:#75d9b5;font-size:16px}
+@media(max-width:580px){.connector-showcase{padding:13px;border-radius:19px}.connector-showcase__grid{grid-template-columns:minmax(0,1fr);gap:11px}.social-connect-card{padding:14px;border-radius:17px}.social-connect-card__description{min-height:0}.connector-showcase__header h3{font-size:16px}}
+@media(prefers-reduced-motion:reduce){.social-connect-card__action{transition:none}}
