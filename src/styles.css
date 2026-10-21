@@ -135,3 +135,33 @@ input:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(31
  .stage{padding-bottom:8px}
  .topbar{padding-right:54px}
 }
+
+
+/* Premium, mobile-first social connection cards used by Agent chat. */
+.connection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr));gap:14px;margin-top:14px;width:100%}
+.connection-card{--connection-accent:#b86cff;position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;gap:13px;min-width:0;padding:18px;border:1px solid color-mix(in srgb,var(--connection-accent) 34%,#132332);border-radius:22px;background:linear-gradient(145deg,rgba(15,18,34,.98),rgba(4,10,18,.98) 68%);box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.04);text-align:right}
+.connection-card:before{content:"";position:absolute;z-index:-1;inset:-60% -20% auto 25%;height:190px;background:radial-gradient(ellipse,color-mix(in srgb,var(--connection-accent) 20%,transparent),transparent 68%);pointer-events:none}
+.connection-card--instagram{--connection-accent:#e879b8}
+.connection-card--telegram{--connection-accent:#42b8ed}
+.connection-card__top{display:flex;align-items:center;gap:12px;min-width:0}
+.connection-brand-mark{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border:1px solid color-mix(in srgb,var(--connection-accent) 60%,transparent);border-radius:16px;background:linear-gradient(145deg,color-mix(in srgb,var(--connection-accent) 25%,#09101b),#080d16);color:var(--connection-accent);font-size:30px;font-weight:800;box-shadow:0 0 22px color-mix(in srgb,var(--connection-accent) 13%,transparent)}
+.connection-card--instagram .connection-brand-mark{background:linear-gradient(145deg,rgba(246,88,130,.22),rgba(136,77,255,.18),#080d16)}
+.connection-card__heading{flex:1;min-width:0}
+.connection-eyebrow{display:block;color:var(--connection-accent);font:700 9px/1.4 system-ui,sans-serif;letter-spacing:1.5px;overflow-wrap:anywhere}
+.connection-card__heading h3{margin:3px 0 0;color:#f3f7ff;font-size:21px;line-height:1.3}
+.connection-lock{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(106,222,177,.25);color:#6adeb1;background:rgba(106,222,177,.08);font-size:17px}
+.connection-card__description{margin:0;color:#a9bacd;font-size:13px;line-height:1.9}
+.connection-card__assurance{display:flex;align-items:flex-start;gap:8px;color:#a9dccc;font-size:11px;line-height:1.7}
+.connection-card__assurance span:first-child{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px;border-radius:50%;background:rgba(106,222,177,.12);color:#6adeb1;font-weight:900}
+.connection-action{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:48px;padding:12px 16px;border:1px solid color-mix(in srgb,var(--connection-accent) 65%,transparent);border-radius:14px;background:linear-gradient(110deg,color-mix(in srgb,var(--connection-accent) 22%,#101522),rgba(8,13,23,.96));color:#fff;font:700 14px Vazirmatn,Tahoma,sans-serif;text-align:right;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.connection-action:hover:not(:disabled){transform:translateY(-1px);border-color:var(--connection-accent);box-shadow:0 8px 22px color-mix(in srgb,var(--connection-accent) 16%,transparent)}
+.connection-action:focus-visible,.connection-fallback__link:focus-visible{outline:2px solid var(--connection-accent);outline-offset:3px}
+.connection-action:disabled{opacity:.62;cursor:wait}
+.connection-action span:last-child{font-size:20px;color:var(--connection-accent)}
+.connection-card__foot{display:flex;align-items:center;gap:7px;color:#748ca2;font-size:10px}
+.connection-status-dot{width:6px;height:6px;border-radius:50%;background:#6adeb1;box-shadow:0 0 8px rgba(106,222,177,.45)}
+.connection-fallback{padding:11px;border:1px solid rgba(255,190,100,.28);border-radius:13px;background:rgba(255,190,100,.06)}
+.connection-fallback p{margin:0 0 8px;color:#ffd9a1;font-size:12px;line-height:1.8}
+.connection-fallback__link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 12px;border:1px solid rgba(255,190,100,.48);border-radius:10px;color:#ffe2b5;text-decoration:none;font-size:12px;font-weight:700}
+@media(max-width:520px){.connection-grid{grid-template-columns:minmax(0,1fr);gap:11px}.connection-card{padding:15px;border-radius:18px}.connection-brand-mark{flex-basis:43px;width:43px;height:43px;border-radius:14px}.connection-card__heading h3{font-size:19px}.connection-card__description{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.connection-action{transition:none}}
