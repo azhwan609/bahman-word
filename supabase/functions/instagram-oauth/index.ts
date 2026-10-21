@@ -4,7 +4,7 @@ import { cors, json, admin, requireUser, HttpError, env, encrypt, signState, ver
 const REDIRECT = () => `${env("SUPABASE_URL")}/functions/v1/instagram-oauth?action=callback`;
 
 const allowedAppOrigins = () => new Set([
-  env("APP_ORIGIN").replace(/\\/+$/, ""),
+  env("APP_ORIGIN").replace(/\/+$/, ""),
   "https://shiwa-creator-hub-azhwan-2026.onrender.com",
   "https://shiwa-creator-hub-v2.onrender.com",
   "https://shiwa-creator-hub.onrender.com",
@@ -17,8 +17,8 @@ function popupHtml(payload: Record<string, unknown>, ok: boolean, requestedOrigi
   const message = ok
     ? "اتصال اینستاگرام انجام شد. به SHIWA برگرد و وضعیت اتصال را تازه‌سازی کن."
     : "اتصال اینستاگرام انجام نشد. به SHIWA برگرد و تنظیمات اتصال را بررسی کن.";
-  const safeOrigin = JSON.stringify(origin).replace(/</g, "\\\\u003c");
-  const safePayload = JSON.stringify(payload).replace(/</g, "\\\\u003c");
+  const safeOrigin = JSON.stringify(origin).replace(/</g, "\\u003c");
+  const safePayload = JSON.stringify(payload).replace(/</g, "\\u003c");
   return new Response(
     `<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SHIWA · Instagram</title><body style="background:#050b12;color:#cdeef5;font:16px sans-serif;text-align:center;padding:12vh 24px"><h2>SHIWA · Instagram</h2><p>${message}</p><a href="${origin || "/"}" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#9333ea;color:white;text-decoration:none">بازگشت به SHIWA</a><script>(function(){var target=${safeOrigin};try{if(window.opener){window.opener.postMessage(${safePayload},target);setTimeout(()=>window.close(),700);return;}}catch(e){}setTimeout(()=>window.location.replace(target),1600);})();</script></body></html>`,
     { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } },
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
         const stateData = JSON.parse(verifiedState);
         userId = String(stateData.userId ?? "");
         ts = Number(stateData.ts);
-        const stateOrigin = String(stateData.origin ?? "").replace(/\\/+$/, "");
+        const stateOrigin = String(stateData.origin ?? "").replace(/\/+$/, "");
         if (allowedAppOrigins().has(stateOrigin)) callbackOrigin = stateOrigin;
       } catch {
         // Backward compatibility for authorization links created before origin-aware state.
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       try { decodedKey = Uint8Array.from(atob(encodedKey), (ch) => ch.charCodeAt(0)); }
       catch { throw new HttpError(503, "TOKEN_ENCRYPTION_KEY must be base64-encoded 32 random bytes"); }
       if (decodedKey.length !== 32) throw new HttpError(503, "TOKEN_ENCRYPTION_KEY must decode to exactly 32 bytes");
-      const requestedOrigin = (req.headers.get("origin") ?? env("APP_ORIGIN")).replace(/\\/+$/, "");
+      const requestedOrigin = (req.headers.get("origin") ?? env("APP_ORIGIN")).replace(/\/+$/, "");
       if (!allowedAppOrigins().has(requestedOrigin)) throw new HttpError(403, "SHIWA frontend origin is not allowed.");
       const state = await signState(JSON.stringify({
         userId: user.id,
