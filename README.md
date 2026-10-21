@@ -3,13 +3,15 @@
 Supabase (Postgres, Auth, Storage, Edge Functions) + React/Vite frontend.
 
 ## Setup
-1. `supabase link --project-ref <ref>` then `supabase db push` (applies `supabase/migrations/0001_init.sql`).
-2. Set secrets (never in the frontend):
-   `supabase secrets set TOKEN_ENCRYPTION_KEY=$(openssl rand -base64 32) STATE_SECRET=$(openssl rand -hex 32) INSTAGRAM_APP_ID=... INSTAGRAM_APP_SECRET=... APP_ORIGIN=https://your-app.example`
-   Optional AI: `GEMINI_API_KEY`, `GEMINI_MODEL`, or `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_API_KEY`, `OPENAI_COMPAT_MODEL`.
-3. Deploy: `supabase functions deploy agent` and `supabase functions deploy instagram-oauth`.
-4. In the Meta developer app, add redirect URI `https://<project>.supabase.co/functions/v1/instagram-oauth?action=callback`.
-5. Frontend: copy `.env.example` to `.env`, then `npm install && npm run dev` (or `npm run build` and host `dist/`).
+1. Configure the existing Supabase project and frontend environment from `.env.example`.
+2. Deploy the SHIWA frontend to Netlify or another static host.
+3. Set the backend Render variables documented in the `shiwa-mcp-server` repository. The Composio API key belongs only in the Render server environment; never expose it in `VITE_*` variables.
+4. Open **Instagram Lite** in SHIWA to connect Instagram and Telegram through Composio-hosted connection popups.
 
-Without any AI key the app runs in built-in mode. Without Instagram credentials the connect flow reports a clear error.
+## Social connections
+- Instagram connections support Business and Creator accounts through Composio.
+- Telegram uses Composio's hosted API-key connection flow for a Telegram bot token. It is not a personal Telegram-account OAuth login.
+- Connections are isolated by the signed-in SHIWA user's Supabase UUID.
+- SHIWA does not store Instagram passwords or Telegram bot tokens.
 
+No Meta app ID/secret or global Instagram session cookie is required for this Composio-based connection flow.
