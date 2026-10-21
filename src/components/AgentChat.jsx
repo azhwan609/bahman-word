@@ -72,6 +72,7 @@ export default function AgentChat() {
       if (!provider) return;
       setConnecting('');
       setConnectError('');
+      setPendingAuth(null);
       setMsgs((messages) => [...messages, {
         role: 'assistant',
         text: event.data.ok
