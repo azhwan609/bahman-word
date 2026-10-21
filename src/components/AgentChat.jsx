@@ -8,31 +8,45 @@ const isTelegramConnectRequest = (value) => /(telegram|تلگرام)/i.test(valu
 const isBothConnectorsRequest = (value) => /(connector|integration|connectors|integrations|سرویس(?:ها)?|اتصال همه|هر دو|both|all integrations|connection links|لینک اتصال)/i.test(value);
 
 function ConnectorShowcase({ onInstagram, onTelegram, busy, links }) {
-  const card = { display: 'flex', alignItems: 'center', gap: 14, padding: 14, borderRadius: 18, background: 'rgba(255,255,255,.045)', marginTop: 12, textAlign: 'left' };
-  const button = { display: 'block', width: '100%', marginTop: 10, border: 0, borderRadius: 12, padding: '11px 14px', color: 'white', fontWeight: 700, cursor: 'pointer' };
-  return <div dir="auto" style={{ maxWidth: 560, marginTop: 14, padding: 16, borderRadius: 22, border: '1px solid rgba(190,140,255,.35)', background: 'linear-gradient(145deg,#11101c,#080d17)', color: '#f7f4ff', boxShadow: '0 16px 50px rgba(0,0,0,.28)' }}>
-    <div style={{ fontSize: 18, fontWeight: 800 }}>✦ Connect Your Universe</div>
-    <div style={{ color: '#b9b4c9', fontSize: 13, marginTop: 5 }}>پلتفرم موردنظرت را انتخاب کن؛ ورود و تأیید دسترسی در سرویس رسمی انجام می‌شود.</div>
-    <div style={card}>
-      <div style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 15, display: 'grid', placeItems: 'center', fontSize: 30, background: 'linear-gradient(135deg,#ffb347,#f02d91 52%,#7447ff)' }}>◎</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 800 }}>Instagram</div>
-        <div style={{ fontSize: 12, color: '#c8c1d5', marginTop: 3 }}>اتصال امن از طریق صفحه رسمی Instagram / Meta</div>
-        <button type="button" onClick={onInstagram} disabled={busy} style={{ ...button, background: 'linear-gradient(100deg,#f97316,#db2777,#7c3aed)' }}>{busy ? 'در حال آماده‌سازی…' : 'اتصال به Instagram ↗'}</button>
-        {links.instagram && <a href={links.instagram} target="_self" rel="noreferrer" style={{ display: 'inline-block', marginTop: 8, color: '#f0b5ff', fontSize: 12 }}>اگر پنجره باز نشد، همین‌جا ادامه بده ↗</a>}
+  return (
+    <section className="connector-showcase" dir="rtl" aria-label="اتصال سرویس‌های اجتماعی">
+      <header className="connector-showcase__header">
+        <div className="connector-showcase__spark" aria-hidden="true">✦</div>
+        <div>
+          <span className="connector-showcase__eyebrow">SHIWA · SECURE INTEGRATIONS</span>
+          <h3>اتصال حساب‌های اجتماعی</h3>
+          <p>سرویس را انتخاب کن؛ تأیید دسترسی در صفحه رسمی همان سرویس انجام می‌شود.</p>
+        </div>
+      </header>
+      <div className="connector-showcase__grid">
+        <article className="social-connect-card social-connect-card--instagram">
+          <div className="social-connect-card__top">
+            <div className="social-connect-card__logo" aria-hidden="true">◎</div>
+            <div className="social-connect-card__title"><span className="social-connect-card__eyebrow">CREATOR ACCOUNT</span><h4>Instagram</h4></div>
+            <span className="social-connect-card__secure" aria-label="اتصال امن">✓</span>
+          </div>
+          <p className="social-connect-card__description">اتصال حساب Creator یا Business از مسیر رسمی Instagram / Meta.</p>
+          <div className="social-connect-card__trust"><span>✓</span> رمز عبور در SHIWA ذخیره نمی‌شود</div>
+          <button type="button" className="social-connect-card__action" onClick={onInstagram} disabled={busy}><span>{busy ? 'در حال آماده‌سازی اتصال…' : 'اتصال امن به Instagram'}</span><span aria-hidden="true">{busy ? '◌' : '↗'}</span></button>
+          {links.instagram && <div className="social-connect-card__fallback"><p>پنجره جدید مسدود شد. از این مسیر امن ادامه بده.</p><a href={links.instagram} target="_self">ادامه اتصال در همین صفحه ↗</a></div>}
+          <footer className="social-connect-card__footer"><span /> صفحه مجوز رسمی Instagram</footer>
+        </article>
+        <article className="social-connect-card social-connect-card--telegram">
+          <div className="social-connect-card__top">
+            <div className="social-connect-card__logo" aria-hidden="true">➤</div>
+            <div className="social-connect-card__title"><span className="social-connect-card__eyebrow">BOT INTEGRATION</span><h4>Telegram</h4></div>
+            <span className="social-connect-card__secure" aria-label="اتصال امن">✓</span>
+          </div>
+          <p className="social-connect-card__description">اتصال ربات تلگرام SHIWA از طریق لینک رسمی t.me؛ این مسیر ورود به حساب شخصی نیست.</p>
+          <div className="social-connect-card__trust"><span>✓</span> توکن ربات را فقط در محل امن وارد کن</div>
+          <button type="button" className="social-connect-card__action" onClick={onTelegram} disabled={busy}><span>{busy ? 'در حال آماده‌سازی اتصال…' : 'اتصال امن به Telegram'}</span><span aria-hidden="true">{busy ? '◌' : '↗'}</span></button>
+          {links.telegram && <div className="social-connect-card__fallback"><p>اگر پنجره جدید باز نشد، لینک رسمی تلگرام آماده است.</p><a href={links.telegram} target="_self">ادامه در Telegram ↗</a></div>}
+          <footer className="social-connect-card__footer"><span /> انتقال به Telegram رسمی</footer>
+        </article>
       </div>
-    </div>
-    <div style={card}>
-      <div style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 15, display: 'grid', placeItems: 'center', fontSize: 28, background: 'linear-gradient(135deg,#53c8ff,#1674d1)' }}>➤</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 800 }}>Telegram</div>
-        <div style={{ fontSize: 12, color: '#c8c1d5', marginTop: 3 }}>اتصال به ربات SHIWA در تلگرام</div>
-        <button type="button" onClick={onTelegram} disabled={busy} style={{ ...button, background: 'linear-gradient(100deg,#38bdf8,#1674d1)' }}>{busy ? 'در حال آماده‌سازی…' : 'اتصال به Telegram ↗'}</button>
-        {links.telegram && <a href={links.telegram} target="_self" rel="noreferrer" style={{ display: 'inline-block', marginTop: 8, color: '#9bdcff', fontSize: 12 }}>اگر پنجره باز نشد، همین‌جا ادامه بده ↗</a>}
-      </div>
-    </div>
-    <div style={{ color: '#aaa5b7', fontSize: 11, marginTop: 12 }}>🛡️ SHIWA رمز عبور حساب‌های شما را درخواست نمی‌کند.</div>
-  </div>;
+      <div className="connector-showcase__privacy"><span>♧</span> تو کنترل می‌کنی چه دسترسی‌هایی را تأیید کنی.</div>
+    </section>
+  );
 }
 
 export default function AgentChat() {

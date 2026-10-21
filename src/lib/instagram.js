@@ -1,5 +1,8 @@
 import { callFn } from './api';
 
+// The OAuth callback HTML is served by the Supabase Edge Function, not the frontend.
+const SUPABASE_ORIGIN = new URL(import.meta.env.VITE_SUPABASE_URL).origin;
+
 // Opens the official Instagram OAuth page in a popup that was opened synchronously
 // from the user's click. The callback uses the existing shiwa:instagram postMessage contract.
 export async function connectInstagram(existingPopup) {
@@ -23,7 +26,7 @@ export async function connectInstagram(existingPopup) {
         if (timeout) clearTimeout(timeout);
       };
       const onMessage = (e) => {
-        if (e.origin !== window.location.origin || e.data?.type !== 'shiwa:instagram') return;
+        if (e.origin !== SUPABASE_ORIGIN || e.data?.type !== 'shiwa:instagram') return;
         cleanup();
         if (e.data.ok && e.data.username) resolve(e.data.username);
         else reject(new Error('Instagram connection failed. Close the window and try again.'));

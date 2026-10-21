@@ -1,17 +1,26 @@
 import { cors, json, admin, requireUser, HttpError, env, encrypt, signState, verifyState, log } from "../_shared/core.ts";
 
-// verify_jwt is off (the popup callback has no JWT); JWT actions are checked manually.
+// The OAuth callback has no user JWT; the start/status actions verify the user in code.
 const REDIRECT = () => `${env("SUPABASE_URL")}/functions/v1/instagram-oauth?action=callback`;
 
-function popupHtml(payload: Record<string, unknown>, ok: boolean) {
-  const origin = env("APP_ORIGIN");
+const allowedAppOrigins = () => new Set([
+  env("APP_ORIGIN").replace(/\/+$/, ""),
+  "https://shiwa-creator-hub-azhwan-2026.onrender.com",
+  "https://shiwa-creator-hub-v2.onrender.com",
+  "https://shiwa-creator-hub.onrender.com",
+  "https://shiwa-creator-hub-49bd8d.netlify.app",
+  "https://shiwa-creator-hub1.netlify.app",
+].filter(Boolean));
+
+function popupHtml(payload: Record<string, unknown>, ok: boolean, requestedOrigin = env("APP_ORIGIN")) {
+  const origin = allowedAppOrigins().has(requestedOrigin) ? requestedOrigin : env("APP_ORIGIN");
   const message = ok
     ? "اتصال اینستاگرام انجام شد. به SHIWA برگرد و وضعیت اتصال را تازه‌سازی کن."
     : "اتصال اینستاگرام انجام نشد. به SHIWA برگرد و تنظیمات اتصال را بررسی کن.";
-  const safeOrigin = JSON.stringify(origin);
-  const safePayload = JSON.stringify(payload);
+  const safeOrigin = JSON.stringify(origin).replace(/</g, "\\u003c");
+  const safePayload = JSON.stringify(payload).replace(/</g, "\\u003c");
   return new Response(
-    `<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SHIWA · Instagram</title><body style="background:#050b12;color:#cdeef5;font:16px sans-serif;text-align:center;padding:12vh 24px"><h2>SHIWA · Instagram</h2><p>${message}</p><a href="${origin || "/"}" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#9333ea;color:white;text-decoration:none">بازگشت به SHIWA</a><script>try{if(window.opener){window.opener.postMessage(${safePayload},${safeOrigin});setTimeout(()=>window.close(),900)}}catch(e){}</script></body></html>`,
+    `<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SHIWA · Instagram</title><body style="background:#050b12;color:#cdeef5;font:16px sans-serif;text-align:center;padding:12vh 24px"><h2>SHIWA · Instagram</h2><p>${message}</p><a href="${origin || "/"}" style="display:inline-block;padding:12px 18px;border-radius:12px;background:#9333ea;color:white;text-decoration:none">بازگشت به SHIWA</a><script>(function(){var target=${safeOrigin};try{if(window.opener){window.opener.postMessage(${safePayload},target);setTimeout(()=>window.close(),700);return;}}catch(e){}setTimeout(()=>window.location.replace(target),1600);})();</script></body></html>`,
     { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } },
   );
 }
@@ -21,12 +30,27 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
   const action = url.searchParams.get("action") ?? body.action;
+  let callbackOrigin = env("APP_ORIGIN");
   try {
     if (action === "callback") {
       const code = (url.searchParams.get("code") ?? "").replace(/#_$/, "");
       if (!code) throw new HttpError(400, "missing code");
-      const [userId, ts] = (await verifyState(url.searchParams.get("state") ?? "")).split(":");
-      if (Date.now() - Number(ts) > 10 * 60_000) throw new HttpError(400, "state expired");
+      const verifiedState = await verifyState(url.searchParams.get("state") ?? "");
+      let userId = "";
+      let ts = 0;
+      try {
+        const stateData = JSON.parse(verifiedState);
+        userId = String(stateData.userId ?? "");
+        ts = Number(stateData.ts);
+        const stateOrigin = String(stateData.origin ?? "").replace(/\/+$/, "");
+        if (allowedAppOrigins().has(stateOrigin)) callbackOrigin = stateOrigin;
+      } catch {
+        // Backward compatibility for authorization links created before origin-aware state.
+        const legacyState = verifiedState.split(":");
+        userId = legacyState[0] ?? "";
+        ts = Number(legacyState[1]);
+      }
+      if (!userId || !Number.isFinite(ts) || Date.now() - ts > 10 * 60_000) throw new HttpError(400, "state expired");
 
       // 1) short-lived token  2) long-lived token  3) profile
       const short = await (await fetch("https://api.instagram.com/oauth/access_token", {
@@ -51,7 +75,7 @@ Deno.serve(async (req) => {
       }, { onConflict: "user_id,provider" });
       if (error) throw new HttpError(500, error.message);
       await log(db, userId, "integration.connected", { provider: "instagram", username: me.username });
-      return popupHtml({ type: "shiwa:instagram", ok: true, username: me.username }, true);
+      return popupHtml({ type: "shiwa:instagram", ok: true, username: me.username }, true, callbackOrigin);
     }
 
     const user = await requireUser(req);
@@ -65,7 +89,14 @@ Deno.serve(async (req) => {
       try { decodedKey = Uint8Array.from(atob(encodedKey), (ch) => ch.charCodeAt(0)); }
       catch { throw new HttpError(503, "TOKEN_ENCRYPTION_KEY must be base64-encoded 32 random bytes"); }
       if (decodedKey.length !== 32) throw new HttpError(503, "TOKEN_ENCRYPTION_KEY must decode to exactly 32 bytes");
-      const state = await signState(`${user.id}:${Date.now()}:${crypto.randomUUID()}`);
+      const requestedOrigin = (req.headers.get("origin") ?? env("APP_ORIGIN")).replace(/\/+$/, "");
+      if (!allowedAppOrigins().has(requestedOrigin)) throw new HttpError(403, "SHIWA frontend origin is not allowed.");
+      const state = await signState(JSON.stringify({
+        userId: user.id,
+        ts: Date.now(),
+        nonce: crypto.randomUUID(),
+        origin: requestedOrigin,
+      }));
       const authUrl = "https://www.instagram.com/oauth/authorize?" + new URLSearchParams({
         client_id: env("INSTAGRAM_APP_ID"), redirect_uri: REDIRECT(), scope: "instagram_business_basic", response_type: "code", state,
       });
@@ -85,7 +116,7 @@ Deno.serve(async (req) => {
 
     throw new HttpError(400, "unknown action");
   } catch (e) {
-    if (action === "callback") return popupHtml({ type: "shiwa:instagram", ok: false }, false);
+    if (action === "callback") return popupHtml({ type: "shiwa:instagram", ok: false }, false, callbackOrigin);
     return json({ error: e instanceof Error ? e.message : "error" }, e instanceof HttpError ? e.status : 500);
   }
 });
