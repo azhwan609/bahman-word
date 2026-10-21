@@ -1,47 +1,128 @@
 import { useEffect, useState } from 'react';
-import { callFn } from '../lib/api';
-import { connectInstagram } from '../lib/instagram';
+import { supabase } from '../lib/supabase';
+
+const MCP_ORIGIN = (import.meta.env.VITE_SHIWA_MCP_URL || 'https://deep-shiwa-ai-mcp.onrender.com').replace(/\/+$/, '');
+
+async function getAccessToken() {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  const token = data.session?.access_token;
+  if (!token) throw new Error('Your SHIWA session has expired. Sign in again.');
+  return token;
+}
+
+async function requestAccounts(path = '/connect/instagram/accounts', options = {}) {
+  const token = await getAccessToken();
+  const response = await fetch(MCP_ORIGIN + path, {
+    ...options,
+    headers: {
+      Authorization: 'Bearer ' + token,
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.detail || 'Instagram connection request failed (' + response.status + ').');
+  }
+  return data;
+}
 
 export default function InstagramLite() {
-  const [status, setStatus] = useState(null);
-  const [profile, setProfile] = useState('');
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [notice, setNotice] = useState('');
 
-  const refresh = () => callFn('instagram-oauth', { action: 'status' }).then(setStatus).catch((e) => setErr(e.message));
-  useEffect(() => { refresh(); }, []);
+  const refresh = async () => {
+    setErr('');
+    try {
+      const data = await requestAccounts();
+      setAccounts(data.accounts || []);
+    } catch (e) {
+      setErr(e.message || 'Could not load connected Instagram accounts.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('instagram_connected') === '1') {
+      setNotice('Instagram connected successfully.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    if (params.get('instagram_error')) {
+      setErr('Instagram authorization did not complete. Please try connecting again.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    refresh();
+  }, []);
 
   const connect = async () => {
+    setBusy(true);
     setErr('');
-    try { await connectInstagram(); refresh(); } catch (e) { setErr(e.message); }
+    setNotice('');
+    try {
+      const data = await requestAccounts('/connect/instagram/start');
+      if (!data.authorization_url) throw new Error('The server did not return an Instagram authorization URL.');
+      window.location.assign(data.authorization_url);
+    } catch (e) {
+      setErr(e.message || 'Could not start Instagram authorization.');
+      setBusy(false);
+    }
   };
-  const loadProfile = () => callFn('agent', { tool: 'instagram_profile', message: 'my instagram profile' })
-    .then((r) => setProfile(r.reply)).catch((e) => setErr(e.message));
-  const disconnect = async () => {
-    await callFn('instagram-oauth', { action: 'disconnect' });
-    setProfile(''); refresh();
+
+  const disconnect = async (account) => {
+    if (!window.confirm('Disconnect @' + (account.external_username || 'Instagram account') + ' from SHIWA?')) return;
+    setBusy(true);
+    setErr('');
+    try {
+      await requestAccounts('/connect/instagram/accounts/' + encodeURIComponent(account.id), { method: 'DELETE' });
+      setNotice('Instagram account disconnected.');
+      await refresh();
+    } catch (e) {
+      setErr(e.message || 'Could not disconnect this account.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <section className="module">
       <div className="card glass">
-        <h2>Instagram Lite</h2>
+        <h2>Instagram Connections</h2>
         <p className="muted">
-          Instagram's login page cannot be embedded in an iframe for security reasons. Sign-in always happens on
-          instagram.com through official OAuth, and this panel uses the connected account through the Graph API.
+          Connect your own Instagram professional account through official Instagram Login. Each connection is stored
+          separately under your SHIWA user, and you can disconnect accounts independently.
         </p>
-        {status?.connected
-          ? <p><span className="dot" /> Connected as <strong>@{status.username}</strong></p>
-          : <p className="muted">Not connected.</p>}
+
+        {loading ? <p className="muted">Loading your connected accounts…</p> : accounts.length === 0
+          ? <p className="muted">No Instagram accounts connected yet.</p>
+          : <div className="instagram-account-list">
+              {accounts.map((account) => (
+                <div className="row" key={account.id}>
+                  <div>
+                    <strong>@{account.external_username || 'Instagram account'}</strong>
+                    <p className="muted">{account.status === 'active' ? 'Connected' : 'Disconnected'}</p>
+                  </div>
+                  {account.status === 'active' &&
+                    <button className="danger" disabled={busy} onClick={() => disconnect(account)}>Disconnect</button>}
+                </div>
+              ))}
+            </div>}
+
         <div className="row">
-          {!status?.connected && <button className="primary" onClick={connect}>Connect Instagram</button>}
-          {status?.connected && <button className="ghost" onClick={loadProfile}>Load profile</button>}
-          <button className="ghost" onClick={() => window.open('https://www.instagram.com/accounts/login/', '_blank', 'noopener,noreferrer')}>Open instagram.com</button>
-          {status?.connected && <button className="danger" onClick={disconnect}>Disconnect</button>}
+          <button className="primary" disabled={busy} onClick={connect}>
+            {busy ? 'Please wait…' : '＋ Connect Instagram account'}
+          </button>
+          <button className="ghost" disabled={busy} onClick={refresh}>Refresh</button>
+          <button className="ghost" onClick={() => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer')}>Open Instagram</button>
         </div>
-        {profile && <p className="result-text">{profile}</p>}
+        {notice && <p className="result-text">{notice}</p>}
         {err && <p className="err">{err}</p>}
       </div>
     </section>
   );
 }
-
