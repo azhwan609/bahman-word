@@ -59,6 +59,7 @@ export default function InstagramLite() {
       if (event.origin !== MCP_ORIGIN || event.data?.type !== 'shiwa:composio') return;
       const provider = PROVIDERS.find((item) => item.id === event.data.provider);
       if (!provider) return;
+      setBusy('');
       setNotice(event.data.ok ? provider.title + ' connected successfully.' : provider.title + ' connection was not completed.');
       setErr('');
       refresh();
@@ -99,10 +100,6 @@ export default function InstagramLite() {
     setBusy(provider);
     setErr('');
     try {
-      await requestConnection(provider, {
-        method: 'DELETE',
-        headers: {},
-      });
       // The account-specific route is used so a user cannot revoke another user's connection.
       const token = await getAccessToken();
       const response = await fetch(MCP_ORIGIN + '/connect/' + provider + '/accounts/' + encodeURIComponent(account.id), {
