@@ -36,8 +36,13 @@ async function startHostedConnection(provider, popup) {
   if (typeof url !== 'string' || !url.startsWith('https://')) {
     throw new Error('سرور لینک امن اتصال را برنگرداند.');
   }
-  if (popup && !popup.closed) popup.location.href = url;
-  else window.location.assign(url);
+  if (popup && !popup.closed) {
+    popup.location.href = url;
+    return null;
+  }
+  // Do not redirect unexpectedly when a mobile browser blocks popups.
+  // Return the URL so the chat can offer an explicit, user-initiated fallback.
+  return url;
 }
 
 const PROVIDER_INFO = {
@@ -58,6 +63,7 @@ export default function AgentChat() {
   const [busy, setBusy] = useState(false);
   const [connecting, setConnecting] = useState('');
   const [connectError, setConnectError] = useState('');
+  const [pendingAuth, setPendingAuth] = useState(null);
 
   useEffect(() => {
     const onMessage = (event) => {
@@ -66,6 +72,7 @@ export default function AgentChat() {
       if (!provider) return;
       setConnecting('');
       setConnectError('');
+      setPendingAuth(null);
       setMsgs((messages) => [...messages, {
         role: 'assistant',
         text: event.data.ok
@@ -80,10 +87,16 @@ export default function AgentChat() {
   const connect = async (provider) => {
     setConnecting(provider);
     setConnectError('');
-    // Open synchronously from the button click so mobile browsers allow the hosted authorization flow.
+    setPendingAuth(null);
+    // Open synchronously from the real click gesture; this is required by mobile popup policies.
     const popup = window.open('about:blank', 'shiwa-' + provider + '-connect', 'popup=yes,width=520,height=720');
     try {
-      await startHostedConnection(provider, popup);
+      const fallbackUrl = await startHostedConnection(provider, popup);
+      if (fallbackUrl) {
+        setPendingAuth({ provider, url: fallbackUrl });
+        setConnectError('مرورگر اجازه باز شدن پنجره جدید را نداد. از دکمه امن داخل کارت استفاده کن؛ صفحه سفید باقی نمی‌ماند.');
+        setConnecting('');
+      }
     } catch (error) {
       if (popup && !popup.closed) popup.close();
       setConnectError(error.message || 'اتصال شروع نشد.');
@@ -128,15 +141,39 @@ export default function AgentChat() {
             {message.tool && <span className="tag">{message.tool}</span>}
             <p>{message.text}</p>
             {message.connectors && (
-              <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+              <div className="connection-grid">
                 {message.connectors.map((provider) => (
-                  <div key={provider} style={{ padding: 12, border: '1px solid rgba(190,140,255,.35)', borderRadius: 14 }}>
-                    <strong>{PROVIDER_INFO[provider].title}</strong>
-                    <p style={{ margin: '6px 0 10px' }}>{PROVIDER_INFO[provider].description}</p>
-                    <button className="primary" type="button" disabled={Boolean(connecting)} onClick={() => connect(provider)}>
-                      {connecting === provider ? 'در حال باز کردن صفحه اتصال…' : 'اتصال ' + PROVIDER_INFO[provider].title + ' ↗'}
+                  <article key={provider} className={'connection-card connection-card--' + provider} dir="rtl">
+                    <div className="connection-card__top">
+                      <div className="connection-brand-mark" aria-hidden="true">
+                        {provider === 'instagram' ? '◎' : '➤'}
+                      </div>
+                      <div className="connection-card__heading">
+                        <span className="connection-eyebrow">SHIWA SECURE CONNECT</span>
+                        <h3>{PROVIDER_INFO[provider].title}</h3>
+                      </div>
+                      <span className="connection-lock" title="اتصال امن" aria-label="اتصال امن">♧</span>
+                    </div>
+                    <p className="connection-card__description">{PROVIDER_INFO[provider].description}</p>
+                    <div className="connection-card__assurance">
+                      <span aria-hidden="true">✓</span>
+                      <span>مجوز نهایی فقط با تأیید خودت انجام می‌شود</span>
+                    </div>
+                    {pendingAuth?.provider === provider && (
+                      <div className="connection-fallback">
+                        <p>پنجره خودکار مسدود شد. برای ادامه، صفحه امن را در همین تب باز کن.</p>
+                        <a className="connection-fallback__link" href={pendingAuth.url}>ادامه اتصال امن ↗</a>
+                      </div>
+                    )}
+                    <button className="connection-action" type="button" disabled={Boolean(connecting)} onClick={() => connect(provider)}>
+                      <span>{connecting === provider ? 'در حال آماده‌سازی اتصال…' : 'اتصال ' + PROVIDER_INFO[provider].title}</span>
+                      <span aria-hidden="true">{connecting === provider ? '◌' : '↗'}</span>
                     </button>
-                  </div>
+                    <div className="connection-card__foot">
+                      <span className="connection-status-dot" />
+                      اتصال رسمی از طریق Composio
+                    </div>
+                  </article>
                 ))}
               </div>
             )}
