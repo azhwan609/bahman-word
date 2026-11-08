@@ -1,0 +1,62 @@
+/* Robot chat side artwork: fill the empty left/right sides with a soft pulse. */
+@media (min-width: 1181px) {
+  .chat {
+    position: relative;
+    isolation: isolate;
+  }
+  .chat::before,
+  .chat::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+    width: clamp(120px, 15vw, 220px);
+    background-image: url("https://imageupload.io/f/L7t2uuIZ.jpg");
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    animation: robot-side-pulse 3.4s ease-in-out infinite;
+    will-change: transform, filter, opacity;
+  }
+  .chat::before {
+    left: 0;
+    box-shadow: inset -18px 0 32px rgba(3, 6, 11, .55), inset 0 0 42px rgba(31, 209, 240, .16);
+  }
+  .chat::after {
+    right: 0;
+    animation-delay: -1.7s;
+    box-shadow: inset 18px 0 32px rgba(3, 6, 11, .55), inset 0 0 42px rgba(31, 209, 240, .16);
+  }
+  .chat .thread,
+  .chat .composer {
+    position: relative;
+    z-index: 1;
+  }
+  .chat .thread {
+    margin-left: clamp(120px, 15vw, 220px);
+    margin-right: clamp(120px, 15vw, 220px);
+  }
+  .chat .composer {
+    margin-left: calc(clamp(120px, 15vw, 220px) + 14px);
+    margin-right: calc(clamp(120px, 15vw, 220px) + 14px);
+  }
+}
+@keyframes robot-side-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(.92) saturate(.95);
+    opacity: .82;
+  }
+  50% {
+    transform: scale(1.06);
+    filter: brightness(1.08) saturate(1.05);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat::before,
+  .chat::after {
+    animation: none;
+  }
+}
